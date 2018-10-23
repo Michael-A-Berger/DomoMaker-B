@@ -13,6 +13,7 @@ const signupPage = (rq, rp) => {
 
 // logout()
 const logout = (rq, rp) => {
+  rq.session.destroy();
   rp.redirect('/');
 };
 
@@ -35,6 +36,8 @@ const login = (request, response) => {
     if (err || !account) {
       return rp.status(401).json({ error: 'Wrong usernme or password' });
     }
+
+    rq.session.account = Account.AccountModel.toAPI(account);
 
     return rp.json({ redirect: '/maker' });
   });
@@ -71,7 +74,10 @@ const signup = (request, response) => {
     const savePromise = newAccount.save();
 
     // Handling when the account entry returns
-    savePromise.then(() => rp.json({ redirect: '/maker' }));
+    savePromise.then(() => {
+      rq.session.account = Account.AccountModel.toAPI(newAccount);
+      return rp.json({ redirect: '/maker' });
+    });
     savePromise.catch((err) => {
       console.log(err);
 
